@@ -13,6 +13,7 @@ class SelectionWidget<T> extends StatefulWidget {
   final DropdownSearchOnFind<T>? asyncItems;
   final DropdownSearchItemAsString<T>? itemAsString;
   final DropdownSearchFilterFn<T>? filterFn;
+  final DropdownSearchSortFn<T>? sortFn;
   final DropdownSearchCompareFn<T>? compareFn;
   final List<T> defaultSelectedItems;
   final PopupPropsMultiSelection<T> popupProps;
@@ -28,6 +29,7 @@ class SelectionWidget<T> extends StatefulWidget {
     this.asyncItems,
     this.itemAsString,
     this.filterFn,
+    this.sortFn,
     this.compareFn,
   }) : super(key: key);
 
@@ -48,10 +50,10 @@ class SelectionWidgetState<T> extends State<SelectionWidget<T>> {
   Timer? _debounce;
 
   void searchBoxControllerListener() {
-      if (_debounce?.isActive ?? false) _debounce?.cancel();
-      _debounce = Timer(widget.popupProps.searchDelay, () {
-        _manageItemsByFilter(searchBoxController.text);
-      });
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(widget.popupProps.searchDelay, () {
+      _manageItemsByFilter(searchBoxController.text);
+    });
   }
 
   @override
@@ -300,7 +302,7 @@ class SelectionWidgetState<T> extends State<SelectionWidget<T>> {
     _loadingNotifier.value = true;
 
     List<T> applyFilter(String filter) {
-      return _cachedItems.where((i) {
+      final filterdItems = _cachedItems.where((i) {
         if (widget.filterFn != null)
           return (widget.filterFn!(i, filter));
         else if (i.toString().toLowerCase().contains(filter.toLowerCase()))
@@ -310,6 +312,9 @@ class SelectionWidgetState<T> extends State<SelectionWidget<T>> {
         }
         return false;
       }).toList();
+
+      if (widget.sortFn != null) filterdItems.sort((a, b) => widget.sortFn!(a, b, filter));
+      return filterdItems;
     }
 
     //load offline data for the first time

@@ -29,6 +29,7 @@ export 'src/properties/text_field_props.dart';
 typedef Future<List<T>> DropdownSearchOnFind<T>(String text);
 typedef String DropdownSearchItemAsString<T>(T item);
 typedef bool DropdownSearchFilterFn<T>(T item, String filter);
+typedef int DropdownSearchSortFn<T>(T a, T b, String filter);
 typedef bool DropdownSearchCompareFn<T>(T item1, T item2);
 typedef Widget DropdownSearchBuilder<T>(BuildContext context, T? selectedItem);
 typedef Widget DropdownSearchBuilderMultiSelection<T>(
@@ -110,6 +111,9 @@ class DropdownSearch<T> extends StatefulWidget {
   ///	custom filter function
   final DropdownSearchFilterFn<T>? filterFn;
 
+  /// sorts item on filter
+  final DropdownSearchSortFn<T>? sortFn;
+
   ///enable/disable dropdownSearch
   final bool enabled;
 
@@ -177,6 +181,7 @@ class DropdownSearch<T> extends StatefulWidget {
     this.dropdownButtonProps = const DropdownButtonProps(),
     this.enabled = true,
     this.filterFn,
+    this.sortFn,
     this.itemAsString,
     this.compareFn,
     this.onBeforeChange,
@@ -206,6 +211,7 @@ class DropdownSearch<T> extends StatefulWidget {
     this.dropdownButtonProps = const DropdownButtonProps(),
     this.enabled = true,
     this.filterFn,
+    this.sortFn,
     this.itemAsString,
     this.compareFn,
     this.selectedItems = const [],
@@ -372,7 +378,7 @@ class DropdownSearchState<T> extends State<DropdownSearch<T>> {
       builder: (FormFieldState<T> state) {
         if (state.value != getSelectedItem) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if(mounted) {
+            if (mounted) {
               state.didChange(getSelectedItem);
             }
           });
@@ -404,7 +410,7 @@ class DropdownSearchState<T> extends State<DropdownSearch<T>> {
       builder: (FormFieldState<List<T>> state) {
         if (state.value != getSelectedItems) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if(mounted) {
+            if (mounted) {
               state.didChange(getSelectedItems);
             }
           });
@@ -623,6 +629,7 @@ class DropdownSearchState<T> extends State<DropdownSearch<T>> {
       popupProps: widget.popupProps,
       itemAsString: widget.itemAsString,
       filterFn: widget.filterFn,
+      sortFn: widget.sortFn,
       items: widget.items,
       asyncItems: widget.asyncItems,
       onChanged: _handleOnChangeSelectedItems,
